@@ -96,8 +96,8 @@ class Grid {
 	}
 
 	update() {
-		for (let y = this.rows - 1; y >= 0; y--) {
-			for (let x = 0; x < this.cols; x++) {
+		for (let x = this.cols; x >= 0; x--) {
+			for (let y = this.rows - 1; y >= 0; y--) {
 				let state = this.cells[y][x];
 				if (state === 1) {
 					if (y + 1 < this.rows) {
@@ -111,7 +111,7 @@ class Grid {
 							let cellLeft = this.inBounds(x - 1, y + 1)
 								? this.cells[y + 1][x - 1]
 								: 1;
-							if (cellRight === 0) {
+							if (cellRight === 0 && random(1) < 0.5) {
 								this.swap(x, y, x + 1, y + 1);
 							} else if (cellLeft === 0) {
 								this.swap(x, y, x - 1, y + 1);
