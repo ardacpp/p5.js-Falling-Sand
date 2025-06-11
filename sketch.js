@@ -4,6 +4,8 @@ let cols, rows;
 let radius = 4;
 let cellsize = 10;
 
+let mode = 1;
+
 function setup() {
 	createCanvas(900, 750);
 	background(50);
@@ -20,14 +22,31 @@ function draw() {
 		y = clamp(y, 0, rows - 1);
 		for (let yOff = -radius; yOff <= radius; yOff++) {
 			for (let xOff = -radius; xOff <= radius; xOff++) {
-				if (xOff * xOff + yOff * yOff <= radius * radius) {
-					grid.set(x + xOff, y + yOff, 1);
+				if (
+					xOff * xOff + yOff * yOff <= radius * radius &&
+					round(random(1, 2)) < 2
+				) {
+					grid.set(x + xOff, y + yOff, mode);
 				}
 			}
 		}
 	}
 	grid.update();
 	grid.show();
+}
+
+function mouseReleased() {
+	mode = 1;
+}
+
+function mousePressed() {
+	let x = floor(mouseX / cellsize);
+	let y = floor(mouseY / cellsize);
+	x = clamp(x, 0, cols - 1);
+	y = clamp(y, 0, rows - 1);
+	if (grid.cells[y][x] === 1) {
+		mode = 0;
+	}
 }
 
 function clamp(value, min, max) {
@@ -56,7 +75,7 @@ class Grid {
 				if (this.cells[y][x] === 1) {
 					let n = noise(x * 0.4, y * 0.4, frameCount * 0.01);
 					let c = map(n, 0, 1, 150, 255);
-					fill(c, c * 0.8, c * 0.5);
+					fill(c, c * 0.7, c * 0.5);
 					rect(
 						x * this.cellsize,
 						y * this.cellsize,
