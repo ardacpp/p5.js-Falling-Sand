@@ -1,14 +1,14 @@
 let grid;
 let cols, rows;
 
-let radius = 4;
-let cellsize = 10;
+let radius = 5;
+let cellsize = 15;
+let gravity = 1;
 
 let mode = 1;
 
 function setup() {
-	createCanvas(900, 750);
-	background(50);
+	createCanvas(1875, 915);
 	cols = round(width / cellsize);
 	rows = round(height / cellsize);
 	grid = new Grid(cols, rows, cellsize);
@@ -49,6 +49,12 @@ function mousePressed() {
 	}
 }
 
+function keyPressed() {
+	if (key === " ") {
+		gravity *= -1;
+	}
+}
+
 function clamp(value, min, max) {
 	return Math.min(Math.max(value, min), max);
 }
@@ -75,7 +81,7 @@ class Grid {
 				if (this.cells[y][x] === 1) {
 					let n = noise(x * 0.4, y * 0.4, frameCount * 0.01);
 					let c = map(n, 0, 1, 150, 255);
-					fill(c, c * 0.7, c * 0.5);
+					fill(c * 0, c * 1, c * 0);
 					rect(
 						x * this.cellsize,
 						y * this.cellsize,
@@ -83,7 +89,7 @@ class Grid {
 						this.cellsize
 					);
 				} else {
-					fill(50);
+					fill(255);
 					rect(
 						x * this.cellsize,
 						y * this.cellsize,
@@ -96,25 +102,51 @@ class Grid {
 	}
 
 	update() {
-		for (let x = this.cols; x >= 0; x--) {
-			for (let y = this.rows - 1; y >= 0; y--) {
-				let state = this.cells[y][x];
-				if (state === 1) {
-					if (y + 1 < this.rows) {
-						let cellBelow = this.cells[y + 1][x];
-						if (cellBelow === 0) {
-							this.swap(x, y, x, y + 1);
-						} else {
-							let cellRight = this.inBounds(x + 1, y + 1)
-								? this.cells[y + 1][x + 1]
-								: 1;
-							let cellLeft = this.inBounds(x - 1, y + 1)
-								? this.cells[y + 1][x - 1]
-								: 1;
-							if (cellRight === 0 && random(1) < 0.5) {
-								this.swap(x, y, x + 1, y + 1);
-							} else if (cellLeft === 0) {
-								this.swap(x, y, x - 1, y + 1);
+		if (gravity > 0) {
+			for (let x = this.cols - 1; x >= 0; x--) {
+				for (let y = this.rows - 1; y >= 0; y--) {
+					if (this.cells[y][x] === 1) {
+						let newY = y + gravity;
+						if (this.inBounds(x, newY)) {
+							if (this.cells[newY][x] === 0) {
+								this.swap(x, y, x, newY);
+							} else {
+								let cellRight = this.inBounds(x + 1, newY)
+									? this.cells[newY][x + 1]
+									: 1;
+								let cellLeft = this.inBounds(x - 1, newY)
+									? this.cells[newY][x - 1]
+									: 1;
+								if (cellRight === 0 && random(1) <= 0.5) {
+									this.swap(x, y, x + 1, newY);
+								} else if (cellLeft === 0) {
+									this.swap(x, y, x - 1, newY);
+								}
+							}
+						}
+					}
+				}
+			}
+		} else if (gravity < 0) {
+			for (let x = this.cols - 1; x >= 0; x--) {
+				for (let y = 0; y < this.rows; y++) {
+					if (this.cells[y][x] === 1) {
+						let newY = y + gravity;
+						if (this.inBounds(x, newY)) {
+							if (this.cells[newY][x] === 0) {
+								this.swap(x, y, x, newY);
+							} else {
+								let cellRight = this.inBounds(x + 1, newY)
+									? this.cells[newY][x + 1]
+									: 1;
+								let cellLeft = this.inBounds(x - 1, newY)
+									? this.cells[newY][x - 1]
+									: 1;
+								if (cellRight === 0 && random(1) <= 0.5) {
+									this.swap(x, y, x + 1, newY);
+								} else if (cellLeft === 0) {
+									this.swap(x, y, x - 1, newY);
+								}
 							}
 						}
 					}
@@ -141,9 +173,5 @@ class Grid {
 
 	inBounds(x, y) {
 		return x >= 0 && x < this.cols && y >= 0 && y < this.rows;
-	}
-
-	isEmpty(x, y) {
-		return this.cells[y][x] === 0;
 	}
 }
